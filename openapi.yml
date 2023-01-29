@@ -3,7 +3,7 @@ info:
   title: api
   version: ''
 paths:
-  /census/extract:
+  /census/population:
     post:
       description: >-
         Calculate the number of people living in a radius around a point,
@@ -78,7 +78,7 @@ paths:
                   value:
                     population: 3364
                     source: US Census Bureau
-      summary: Extract Features
+      summary: Population
       security: &ref_0
         - BearerAuth: []
   /census/income:
