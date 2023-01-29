@@ -1,0 +1,649 @@
+openapi: 3.0.1
+info:
+  title: api
+  version: ''
+paths:
+  /census/extract:
+    post:
+      description: >-
+        Calculate the number of people living in a radius around a point,
+        according to US Census data.
+      operationId: CensusService.population
+      tags:
+        - Census
+      parameters:
+        - name: center
+          in: query
+          description: >
+            The center of the circle as a coordinate. Residents inside this
+            circle will be counted in calculating the population count.
+
+            The center coordinate is formatted as longitude,latitude. One of
+            center or address is required.
+          required: false
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: '-118.328228,33.342819'
+        - name: address
+          in: query
+          description: >
+            The center of the circle as an address. Residents inside this circle
+            will be counted in calculating the population count.
+
+            If the address is ambiguous, the best result will be chosen, which
+            may or may not be the target address. 
+
+            To get the best results, provide the full address, including:
+            building number, street name, city name, state, zip code, and
+            country.
+          required: false
+          schema:
+            type: string
+        - name: radius
+          in: query
+          description: >-
+            The radius around the center, in meters. Maximum radius is 16,093
+            meters (10 miles).
+          required: true
+          schema:
+            type: number
+            format: double
+          examples:
+            Example1:
+              value: 1000
+        - name: api_key
+          in: query
+          description: >-
+            Your account's API key. You can create an API key by [registering
+            for an account](https://buntinglabs.com/account/register) and copy
+            and paste it from your [account
+            dashboard](https://buntinglabs.com/dashboard).
+          required: true
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: demo
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PopulationResponse'
+              examples:
+                Example1:
+                  value:
+                    population: 3364
+                    source: US Census Bureau
+      summary: Extract Features
+      security: &ref_0
+        - BearerAuth: []
+  /census/income:
+    post:
+      description: >
+        Calculate the median income of the population inside a circle centered
+        at a point with a given radius.
+
+        You can provide either a coordinate (latitude and longitude) or an
+        address, plus a radius around the center.
+
+        This endpoint is useful for real estate applications, when one might
+        want to contextualize a property according to its surrounding
+        neighborhood.
+      operationId: CensusService.median
+      tags:
+        - Census
+      parameters:
+        - name: center
+          in: query
+          description: >
+            The center of the circle as a coordinate. Residents inside this
+            circle will be counted in calculating the population count.
+
+            The center coordinate is formatted as longitude,latitude. One of
+            center or address is required.
+          required: false
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: '-118.328228,33.342819'
+        - name: address
+          in: query
+          description: >
+            The center of the circle as an address. Residents inside this circle
+            will be counted in calculating the population count.
+
+            If the address is ambiguous, the best result will be chosen, which
+            may or may not be the target address. 
+
+            To get the best results, provide the full address, including:
+            building number, street name, city name, state, zip code, and
+            country.
+          required: false
+          schema:
+            type: string
+        - name: radius
+          in: query
+          description: >-
+            The radius around the center, in meters. Maximum radius is 16,093
+            meters (10 miles).
+          required: true
+          schema:
+            type: number
+            format: double
+          examples:
+            Example1:
+              value: 1000
+        - name: api_key
+          in: query
+          description: >-
+            Your account's API key. You can create an API key by [registering
+            for an account](https://buntinglabs.com/account/register) and copy
+            and paste it from your [account
+            dashboard](https://buntinglabs.com/dashboard).
+          required: true
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: demo
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IncomeResponse'
+              examples:
+                Example1:
+                  value:
+                    median_income: 34856.37
+                    source: US Census ACS 2020
+      summary: Median Income
+      security: *ref_0
+  /osm/extract:
+    post:
+      description: >
+        This endpoint downloads features from OpenStreetMap based on tags and
+        optionally a bounding box, resulting in a GeoJSON.
+
+        This API extracts features from the OpenStreetMap database and formats
+        them as GeoJSON.
+
+        You can filter for any tag in the database, either as `key=value` or
+        `key=*`, and can chain tags if you need 2+ tags.
+
+        This endpoint is especially useful for extracting map data directly to
+        user applications (like the browser) or as a faster alternative to
+        [Overpass Turbo](http://overpass-turbo.eu/) and the [Overpass
+        API](http://overpass-api.de/).
+      operationId: OsmService.extractFeatures
+      tags:
+        - Osm
+      parameters:
+        - name: tags
+          in: query
+          description: >
+            This is a list of tags in the form `key=value` to filter features
+            for. All features extracted will satisfy each of the passed tags
+            given by this parameter.
+
+            This tag list can be created by forming an array of `key=value`
+            items and joining them into one string with the `&` character.
+
+            Because both = and & are reserved characters in URIs, this list must
+            be URL encoded.
+
+            An example list of tags could be `leisure=park` and `name=Westglen
+            Park`. This matches parks that have the name Westglen Park. To set
+            this parameter, we’ll URL encode leisure=park&name=Westglen Park.
+
+            Documentation on tags can be found on the
+            [TagInfo](https://docs.buntinglabs.com/openstreetmap-api/count#:~:text=found%20on%20the-,TagInfo,-resource%20website)
+            resource website.
+          required: true
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: aeroway%3Drunway
+        - name: bbox
+          in: query
+          description: >
+            This is the bounding box for extracted features. The coordinates (in
+            EPSG:4326) of the bounding box are required to be in (minimum
+            longitude, minimum latitude, maximum longitude, maximum latitude)
+            order. 
+
+            Coordinates are expressed as signed floats joined by commas.
+
+            An example bounding box in the US could be
+            `-108.984375,32.026706,-103.051758,37.195331`.
+
+            You can create a bounding box `on bboxfinder`, or in shapely by
+            invoking the `bounds` property on a geometry.
+          required: false
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: '-118.663330,33.580303,-117.507019,34.311681'
+        - name: api_key
+          in: query
+          description: >
+            Your account's API key. 
+
+            You can create an API key by registering for an account and copy and
+            paste it from your account dashboard.
+          required: true
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: demo
+      responses:
+        '200':
+          description: >-
+            When the OSM feature extract is successfully created, a 200 OK
+            response will be issued, with `Content-Type: application/json`. The
+            body will be a valid [GeoJSON
+            FeatureCollection](https://geojson.org/).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureCollection'
+              examples:
+                Example1:
+                  value:
+                    type: commons.FeatureCollection
+                    features:
+                      - type: Feature
+                        properties:
+                          aeroway: runway
+                        geometry:
+                          type: MultiPolygon
+                          coordinates:
+                            - - 111.9623558
+                              - 40.7735137
+                            - - 111.9618135
+                              - 40.7735137
+                            - - 111.9618012
+                              - 40.7988855
+                            - - 111.9623435
+                              - 40.7989041
+                            - - 111.9623558
+                              - 40.7735137
+      summary: Extract Features
+      security: *ref_0
+  /osm/count:
+    get:
+      description: >
+        This endpoint counts the features in OpenStreetMap that match the given
+        tags and reside in a bounding box.
+      operationId: OsmService.countFeatures
+      tags:
+        - Osm
+      parameters:
+        - name: tags
+          in: query
+          description: >
+            This is a list of tags in the form `key=value` to filter features
+            for. All features extracted will satisfy each of the passed tags
+            given by this parameter.
+
+            This tag list can be created by forming an array of `key=value`
+            items and joining them into one string with the `&` character.
+
+            Because both = and & are reserved characters in URIs, this list must
+            be URL encoded.
+
+            An example list of tags could be `leisure=park` and `name=Westglen
+            Park`. This matches parks that have the name Westglen Park. To set
+            this parameter, we’ll URL encode leisure=park&name=Westglen Park.
+
+            Documentation on tags can be found on the
+            [TagInfo](https://docs.buntinglabs.com/openstreetmap-api/count#:~:text=found%20on%20the-,TagInfo,-resource%20website)
+            resource website.
+          required: true
+          schema:
+            type: string
+        - name: bbox
+          in: query
+          description: >
+            This is the bounding box for extracted features. The coordinates (in
+            EPSG:4326) of the bounding box are required to be in (minimum
+            longitude, minimum latitude, maximum longitude, maximum latitude)
+            order. 
+
+            Coordinates are expressed as signed floats joined by commas.
+
+            An example bounding box in the US could be
+            `-108.984375,32.026706,-103.051758,37.195331`.
+
+            You can create a bounding box `on bboxfinder`, or in shapely by
+            invoking the `bounds` property on a geometry.
+          required: false
+          schema:
+            type: string
+        - name: api_key
+          in: query
+          description: >
+            Your account's API key. 
+
+            You can create an API key by registering for an account and copy and
+            paste it from your account dashboard.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: >-
+            When features are successfully counted, a 200 OK response will be
+            issued, with Content-Type: `application/json`. The body will have a
+            property `feature_count` which will be an unsigned integer
+            representing the number of features matching the tags and bounding
+            box.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountFeatureResponse'
+      summary: Count Features
+      security: *ref_0
+  /plss/section:
+    post:
+      description: >-
+        This API finds a Public Land Survey System section based on its section
+        number, range, township, and principal meridian. For example, if you
+        were looking at a survey plat in San Francisco, California, it might
+        refer to the section as being section 31 in range R05W, township T02S,
+        and meridian MDM. This means that the section falls inside the survey
+        township located 2 townships south and 5 townships west of the Mt.
+        Diablo Meridian and its base line, and as section 31, it is the
+        southwest corner of that township. This API enables you to download the
+        GeoJSON for a particular range, township, meridian, and section number
+        combination.
+      operationId: GeocodeService.section
+      tags:
+        - Plss
+      parameters:
+        - name: section
+          in: query
+          description: >-
+            The section number, between 1 and 36 (inclusive), specifies which
+            section of the township should be returned.
+          required: true
+          schema:
+            type: integer
+          examples:
+            Example1:
+              value: 31
+        - name: range
+          in: query
+          description: >-
+            The range specifies the numbered distance and bearing (east or west)
+            from the principal meridian.
+          required: true
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: 5W
+        - name: township
+          in: query
+          description: >-
+            The township specifies the numbered distance and bearing (north or
+            south) from the baseline associated with each principal meridian.
+          required: true
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: '25'
+        - name: meridian
+          in: query
+          description: >-
+            This can take any value below. The values are provided alongside
+            their approximate count, based on the total area surveyed to that
+            meridian.
+          required: true
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: Mount+Diablo+Meridian
+        - name: api_key
+          in: query
+          description: >-
+            Your account's API key. You can create an API key by [registering
+            for an account](https://buntinglabs.com/account/register) and copy
+            and paste it from your [account
+            dashboard](https://buntinglabs.com/dashboard).
+          required: true
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: demo-key
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeocodeSectionResponse'
+              examples:
+                Example1:
+                  value:
+                    type: Feature
+                    properties:
+                      description: Sec. 31, T.2S, R.5W, Mount Diablo P.M.
+                      acreage: 640
+                    geometry:
+                      type: Polygon
+                      coordinates:
+                        - - -122.462026
+                          - 37.70797
+                        - - -122.4413432
+                          - 37.70795
+                        - - -122.4424872
+                          - 37.72361
+                        - - -122.4621782
+                          - 37.72367
+                        - - -122.462026
+                          - 37.70797
+      summary: Geocode Section
+      security: *ref_0
+  /poi/:
+    get:
+      description: >-
+        This endpoint generates a description of a neighborhood surrounding a
+        location. This is useful for describing a rental or home listing on a
+        website or contextualizing a potential investment opportunity for
+        prospective investors.
+      operationId: PoiService.neighborhood
+      tags:
+        - Poi
+      parameters:
+        - name: location
+          in: query
+          description: The location of the area to describe.
+          required: true
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: '-122.4319,37.7849'
+        - name: api_key
+          in: query
+          description: >-
+            Your account's API key. You can create an API key by [registering
+            for an account](https://buntinglabs.com/account/register) and copy
+            and paste it from your [account
+            dashboard](https://buntinglabs.com/dashboard).
+          required: true
+          schema:
+            type: string
+          examples:
+            Example1:
+              value: demo
+      responses:
+        '200':
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                Example1:
+                  value: >-
+                    Welcome to Japantown, a vibrant and diverse neighborhood in
+                    San Francisco! The area is known for its many nearby Asian
+                    restaurants, and the convenience of having a Safeway right
+                    around the corner for all your grocery needs. The
+                    neighborhood is highly educated, with 29% of residents
+                    holding masters degrees. The area is very walkable and
+                    densely populated with 3-story buildings. The average home
+                    in the area sells for $1.2M. The nearby public schools are
+                    rated as 5/10, it may not be the best option for families
+                    with school-aged children. But for those that work in the
+                    Financial District, the SFMTA 24 and 38 buses provide good
+                    transit options into the city. This is a great neighborhood
+                    for those looking to be in the heart of the city, with easy
+                    access to all that San Francisco has to offer.
+      summary: Neighborhood Description
+      security: *ref_0
+components:
+  schemas:
+    PopulationResponse:
+      type: object
+      properties:
+        population:
+          type: integer
+          description: >-
+            The expected number of residents in the circle, based on US census
+            data.
+        source:
+          type: string
+          description: >-
+            A descriptive source for the data, including the year the data was
+            collected.
+    IncomeResponse:
+      type: object
+      properties:
+        median_income:
+          type: number
+          format: double
+          description: >-
+            The median income of the population of the circle, according to US
+            Census data.
+        source:
+          type: string
+          description: >-
+            A descriptive source for the data, including the year the data was
+            collected.
+    FeatureCollection:
+      type: object
+      properties:
+        type:
+          type: string
+          example: commons.FeatureCollection
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/Feature'
+      required:
+        - type
+        - features
+    Feature:
+      type: object
+      properties:
+        type:
+          type: string
+        geometry:
+          $ref: '#/components/schemas/FeatureGeometry'
+        properties:
+          $ref: '#/components/schemas/FeatureProperties'
+      required:
+        - type
+        - geometry
+        - properties
+    FeatureProperties: {}
+    FeatureGeometry:
+      type: object
+      properties:
+        type:
+          type: string
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Coordinate'
+      required:
+        - type
+        - coordinates
+    Coordinate:
+      type: number
+      format: double
+    CountFeatureResponse:
+      type: object
+      properties:
+        feature_count:
+          type: integer
+      required:
+        - feature_count
+    GeocodeProperties:
+      type: object
+      properties:
+        description:
+          type: string
+        acreage:
+          type: integer
+      required:
+        - description
+        - acreage
+    GeocodeGeomtery:
+      type: object
+      properties:
+        type:
+          type: string
+        coordinates:
+          type: string
+      required:
+        - type
+        - coordinates
+    GeocodeSectionResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: Feature
+        properties:
+          $ref: '#/components/schemas/GeoCodeSectionProperties'
+        geometry:
+          $ref: '#/components/schemas/FeatureGeometry'
+      required:
+        - type
+        - properties
+        - geometry
+    GeoCodeSectionProperties:
+      type: object
+      properties:
+        description:
+          type: string
+        acreage:
+          type: integer
+      required:
+        - description
+        - acreage
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+servers:
+  - url: https://osm.buntinglabs.com/v1/
+    description: Production
