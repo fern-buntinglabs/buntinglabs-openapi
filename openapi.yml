@@ -594,8 +594,7 @@ components:
       properties:
         feature_count:
           type: integer
-      required:
-        - feature_count
+          description: The number of features matching the filter tags and bounding box
     GeocodeProperties:
       type: object
       properties:
