@@ -8,7 +8,7 @@ paths:
       description: >-
         Calculate the number of people living in a radius around a point,
         according to US Census data.
-      operationId: CensusService.population
+      operationId: censusService.population
       tags:
         - Census
       parameters:
@@ -93,7 +93,7 @@ paths:
         This endpoint is useful for real estate applications, when one might
         want to contextualize a property according to its surrounding
         neighborhood.
-      operationId: CensusService.median
+      operationId: censusService.median
       tags:
         - Census
       parameters:
@@ -181,7 +181,7 @@ paths:
         user applications (like the browser) or as a faster alternative to
         [Overpass Turbo](http://overpass-turbo.eu/) and the [Overpass
         API](http://overpass-api.de/).
-      operationId: OsmService.extractFeatures
+      operationId: osmService.extractFeatures
       tags:
         - Osm
       parameters:
@@ -284,7 +284,7 @@ paths:
       description: >
         This endpoint counts the features in OpenStreetMap that match the given
         tags and reside in a bounding box.
-      operationId: OsmService.countFeatures
+      operationId: osmService.countFeatures
       tags:
         - Osm
       parameters:
@@ -366,7 +366,7 @@ paths:
         southwest corner of that township. This API enables you to download the
         GeoJSON for a particular range, township, meridian, and section number
         combination.
-      operationId: GeocodeService.section
+      operationId: plssService.section
       tags:
         - Plss
       parameters:
@@ -464,7 +464,7 @@ paths:
         location. This is useful for describing a rental or home listing on a
         website or contextualizing a potential investment opportunity for
         prospective investors.
-      operationId: PoiService.neighborhood
+      operationId: poiService.neighborhood
       tags:
         - Poi
       parameters:
